@@ -20,6 +20,7 @@ export default function RecipeBook() {
   const [creatorFilter, setCreatorFilter] = useState("All");
   const [baseFilter, setBaseFilter] = useState("All");
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function loadRecipes() {
     const response = await fetch("/api/recipes");
@@ -43,6 +44,14 @@ export default function RecipeBook() {
     if (!response.ok) return;
     setCreator(""); setName(""); setBase(""); setIngredients([{ amount: "", name: "" }]); setPreparation(""); setNotes("");
     await loadRecipes(); setView("browse");
+  }
+
+  async function deleteRecipe(recipe: Recipe) {
+    if (!window.confirm(`Delete "${recipe.name}"? This cannot be undone.`)) return;
+    setDeletingId(recipe.id);
+    const response = await fetch(`/api/recipes?id=${encodeURIComponent(recipe.id)}`, { method: "DELETE" });
+    setDeletingId(null);
+    if (response.ok) setRecipes(current => current.filter(item => item.id !== recipe.id));
   }
 
   const filtered = useMemo(() => recipes.filter(recipe =>
@@ -76,7 +85,7 @@ export default function RecipeBook() {
       <label>Search by Drink Name</label><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search recipes..." />
       <Filter title="Filter by Creator" items={["All", ...creators]} value={creatorFilter} setValue={setCreatorFilter} />
       <Filter title="Filter by Base" items={["All", ...bases]} value={baseFilter} setValue={setBaseFilter} />
-      <section className="recipes">{filtered.length ? filtered.map(recipe => <article key={recipe.id}><div><span>{recipe.base}</span><h2>{recipe.name}</h2><p>Created by {recipe.creator}</p></div>{recipe.ingredients.length > 0 && <ul>{recipe.ingredients.map((i, n) => <li key={n}><b>{i.amount}</b> {i.name}</li>)}</ul>}{recipe.preparation && <p><strong>Preparation</strong><br />{recipe.preparation}</p>}{recipe.notes && <p><strong>Notes &amp; Variations</strong><br />{recipe.notes}</p>}</article>) : <div className="empty"><img src="/muddy-root-logo.png" alt="" /><p>{recipes.length ? "No recipes match those filters." : "No recipes yet — add your first one!"}</p></div>}</section>
+      <section className="recipes">{filtered.length ? filtered.map(recipe => <article key={recipe.id}><div className="recipe-card-head"><div><span>{recipe.base}</span><h2>{recipe.name}</h2><p>Created by {recipe.creator}</p></div><button className="delete-recipe" type="button" disabled={deletingId === recipe.id} aria-label={`Delete ${recipe.name}`} onClick={() => void deleteRecipe(recipe)}>{deletingId === recipe.id ? "Deleting…" : "Delete"}</button></div>{recipe.ingredients.length > 0 && <ul>{recipe.ingredients.map((i, n) => <li key={n}><b>{i.amount}</b> {i.name}</li>)}</ul>}{recipe.preparation && <p><strong>Preparation</strong><br />{recipe.preparation}</p>}{recipe.notes && <p><strong>Notes &amp; Variations</strong><br />{recipe.notes}</p>}</article>) : <div className="empty"><img src="/muddy-root-logo.png" alt="" /><p>{recipes.length ? "No recipes match those filters." : "No recipes yet — add your first one!"}</p></div>}</section>
     </main>}
   </div>;
 }

@@ -18,3 +18,12 @@ export async function POST(request: Request) {
   await env.DB.prepare("INSERT INTO recipes (id, creator, name, base, ingredients, preparation, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").bind(recipe.id, recipe.creator, recipe.name, recipe.base, JSON.stringify(recipe.ingredients), recipe.preparation, recipe.notes, Date.now()).run();
   return Response.json(recipe, { status: 201 });
 }
+
+export async function DELETE(request: Request) {
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return Response.json({ error: "Recipe id is required" }, { status: 400 });
+  await ready();
+  const result = await env.DB.prepare("DELETE FROM recipes WHERE id = ?").bind(id).run();
+  if (!result.meta.changes) return Response.json({ error: "Recipe not found" }, { status: 404 });
+  return Response.json({ deleted: true });
+}
