@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import InstallHint from "./install-hint";
 
 const creators = ["Christian", "Jude", "Kate", "Kennedy", "Paige"];
 const bases = ["Kava", "Kratom", "Coffee"];
@@ -61,6 +62,7 @@ export default function RecipeBook() {
   ), [recipes, query, creatorFilter, baseFilter]);
 
   return <div className="page-shell">
+    <InstallHint />
     <header className="brand">
       <img src="/muddy-root-logo.png" alt="The Muddy Root logo" />
       <div><p>Recipe Book</p><h1>The Muddy <em>Root</em></h1></div>

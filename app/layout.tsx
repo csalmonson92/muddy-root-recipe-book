@@ -1,6 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import ServiceWorkerRegister from "./sw-register";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#f6efd9",
+  viewportFit: "cover",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -10,12 +16,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "The Muddy Root Recipe Book",
     description: "Create, save, and browse favorite Muddy Root recipes.",
-    icons: { icon: "/muddy-root-logo.png" },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: { capable: true, title: "Muddy Root", statusBarStyle: "default" },
+    icons: { icon: "/muddy-root-logo.png", apple: "/muddy-root-logo.png" },
     openGraph: { title: "The Muddy Root Recipe Book", description: "Create, save, and browse favorite Muddy Root recipes.", images: [image] },
     twitter: { card: "summary_large_image", title: "The Muddy Root Recipe Book", description: "Create, save, and browse favorite Muddy Root recipes.", images: [image] },
   };
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<ServiceWorkerRegister /></body></html>;
 }
